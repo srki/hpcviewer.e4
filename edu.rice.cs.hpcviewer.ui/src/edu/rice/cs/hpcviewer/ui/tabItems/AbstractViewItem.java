@@ -113,7 +113,7 @@ public abstract class AbstractViewItem extends AbstractBaseViewItem implements E
 	@Override
 	public void handleEvent(Event event) {
 		ScopeTreeViewer treeViewer = contentViewer.getTreeViewer();
-		if (treeViewer.getTree().isDisposed())
+		if (treeViewer == null || treeViewer.getTree().isDisposed())
 			return;
 
 		Object obj = event.getProperty(IEventBroker.DATA);

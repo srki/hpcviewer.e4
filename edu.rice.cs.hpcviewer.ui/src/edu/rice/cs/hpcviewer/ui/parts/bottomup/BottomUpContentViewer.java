@@ -48,7 +48,7 @@ public class BottomUpContentViewer extends AbstractViewBuilder
 		// we have to set the database to the content provider to initialize
 		//    inclusive and exclusive propagation filters
 		//    see {@code CallerViewContentProvider.setDatabase }
-		contentProvider.setDatabase((Experiment) root.getExperiment());
+		//contentProvider.setDatabase((Experiment) root.getExperiment());
 		
 		super.setData(root);
 	}

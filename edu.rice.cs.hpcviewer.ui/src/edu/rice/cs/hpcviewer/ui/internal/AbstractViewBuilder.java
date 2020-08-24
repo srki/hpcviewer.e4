@@ -103,7 +103,7 @@ public abstract class AbstractViewBuilder implements IViewBuilder, ISelectionCha
 	final private DatabaseCollection database;
 	private EMenuService menuService;
 	
-	private ScopeTreeViewer treeViewer = null;
+	private ScopeNatTree treeViewer = null;
 	
 	private ToolItem     toolItem[];
 	private LabelMessage lblMessage;
@@ -199,55 +199,22 @@ public abstract class AbstractViewBuilder implements IViewBuilder, ISelectionCha
 		// table creation
 		// -------------------------------------------
 		
-		treeViewer = new ScopeTreeViewer(parent, SWT.NONE);
-		Tree tree = treeViewer.getTree();
-		tree.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
-        tree.setHeaderVisible(true);
-        tree.setLinesVisible(true);
-
-		treeViewer.setContentProvider( getContentProvider(treeViewer));
-		//createScopeColumn(treeViewer);
+		treeViewer = new ScopeNatTree(parent, SWT.NONE);
 		
 		MPart part = partService.getActivePart();
-		
-		mouseDownListener = new ScopeMouseListener(treeViewer, (ProfilePart) part.getObject());
-		treeViewer.getTree().addListener(SWT.MouseDown, mouseDownListener);
-		treeViewer.addSelectionChangedListener(this);
 
 		// initialize tool item handler at the end
 		// because we need access to tree viewer :-( 
 		setToolItemHandlers();
-
-		final ExportTable export = new ExportTable(treeViewer, lblMessage);
-		final Action a = new Action("Copy") {
-			@Override
-			public void run() {
-				StringBuffer sb = export.getSelectedRows();
-				
-				Clipboard clipboard = new Clipboard(treeViewer.getTree().getDisplay());
-			    TextTransfer [] textTransfer = {TextTransfer.getInstance()};
-			    clipboard.setContents(new Object [] {sb.toString()}, textTransfer);
-			    clipboard.dispose();
-			}
-        };
         
         final MenuManager mgr = new MenuManager();
         mgr.setRemoveAllWhenShown(true);
 
-        mgr.addMenuListener(manager -> {
-                IStructuredSelection selection = treeViewer.getStructuredSelection();
-                if (!selection.isEmpty()) {
-                        a.setText("Copy to clipboard");
-                        mgr.add(a);
-                }
-        });
-        treeViewer.getControl().setMenu(mgr.createContextMenu(treeViewer.getControl()));
 	}
 
 	
 	@PreDestroy
 	public void dispose() {
-		treeViewer.removeSelectionChangedListener(this);
 		((ScopeMouseListener) mouseDownListener).dispose();
 		
 	}
@@ -257,38 +224,11 @@ public abstract class AbstractViewBuilder implements IViewBuilder, ISelectionCha
 		
 		removeColumns();
 		
-		createScopeColumn(getViewer());
-		
 		Experiment experiment = (Experiment) root.getExperiment();
 		
-		// add metric columns only if the metric is not empty
-		boolean bSorted = true;
-		List<BaseMetric> metrics = experiment.getVisibleMetrics();
-		
-		for(BaseMetric metric : metrics) {
-			if (root.getMetricValue(metric) == MetricValue.NONE)
-				continue;
-			
-			treeViewer.addTreeColumn(metric, bSorted);
-			
-			// only the first visible column is sorted
-			bSorted = false;
-		}
-		// TOOO: populate the table: this can take really long time !
 		treeViewer.setInput(root);
 		
-		// insert the first row (header)
-		treeViewer.insertParentNode(root);
-		
-		// resize the width of metric columns
-		TreeColumn columns[] = treeViewer.getTree().getColumns();
-		for(TreeColumn col:columns) {
-			if (col.getData() != null) {
-				col.pack();
-			}
-		}
-		
-		updateStatus();
+		//updateStatus();
 
 		// synchronize hide/show columns with other views that already visible
 		// since this view is just created, we need to ensure the columns hide/show
@@ -302,12 +242,11 @@ public abstract class AbstractViewBuilder implements IViewBuilder, ISelectionCha
 			return;
 		
 		boolean []status = (boolean[]) dataEvent.data;
-		treeViewer.setColumnsStatus(status);
 	}
 	
 	@Override
 	public RootScope getData() {
-		return treeViewer.getRootScope();
+		return treeViewer.getInput();
 	}
 
 	
@@ -318,7 +257,7 @@ public abstract class AbstractViewBuilder implements IViewBuilder, ISelectionCha
 	
 	@Override
 	public ScopeTreeViewer getTreeViewer() {
-		return treeViewer;
+		return null;
 	}
 	
     
@@ -356,11 +295,7 @@ public abstract class AbstractViewBuilder implements IViewBuilder, ISelectionCha
      * @return
      */
 	private int removeColumns() {
-		TreeColumn columns[] = treeViewer.getTree().getColumns();
-		for (TreeColumn col : columns) {
-			col.dispose();
-		}
-		return columns.length;
+		return 0;
 	}
 	
 	
@@ -421,7 +356,7 @@ public abstract class AbstractViewBuilder implements IViewBuilder, ISelectionCha
 	 */
 	protected void updateStatus() {
 
-		BaseExperiment exp = treeViewer.getExperiment();
+		BaseExperiment exp = treeViewer.getInput().getExperiment();
 		if (exp == null) {
 			// disable everything
 			for(ToolItem ti : toolItem) {
@@ -441,7 +376,7 @@ public abstract class AbstractViewBuilder implements IViewBuilder, ISelectionCha
 		// tool items that depend once the selected node item
 		// --------------------------------------------------------------------------
 		
-		IStructuredSelection selection = treeViewer.getStructuredSelection();
+		IStructuredSelection selection = null; //treeViewer.getStructuredSelection();
 		
 		// notify subclasses to update the status
 		selectionChanged(selection);
@@ -475,7 +410,7 @@ public abstract class AbstractViewBuilder implements IViewBuilder, ISelectionCha
 	 * @return
 	 */
 	protected ScopeTreeViewer getViewer() {
-		return treeViewer;
+		return null; //treeViewer;
 	}
 	
 
@@ -559,7 +494,7 @@ public abstract class AbstractViewBuilder implements IViewBuilder, ISelectionCha
 					metricAction = new MetricColumnHideShowAction(eventBroker, getMetricManager(), affectOthers);
 				}
 				
-				metricAction.showColumnsProperties(treeViewer, database);
+				//metricAction.showColumnsProperties(treeViewer, database);
 			}
 			
 			@Override
@@ -586,7 +521,7 @@ public abstract class AbstractViewBuilder implements IViewBuilder, ISelectionCha
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				if (exportCSV == null) {
-					exportCSV = new ExportTable(treeViewer, lblMessage);
+					//exportCSV = new ExportTable(treeViewer, lblMessage);
 				}
 				exportCSV.export();
 			}
