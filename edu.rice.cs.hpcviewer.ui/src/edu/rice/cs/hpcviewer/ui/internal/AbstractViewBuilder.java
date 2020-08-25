@@ -44,16 +44,16 @@ import edu.rice.cs.hpc.data.experiment.metric.IMetricManager;
 import edu.rice.cs.hpc.data.experiment.metric.MetricValue;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
+import edu.rice.cs.hpcsetting.fonts.FontManager;
+import edu.rice.cs.hpcsetting.preferences.PreferenceConstants;
 import edu.rice.cs.hpcviewer.ui.ProfilePart;
 import edu.rice.cs.hpcviewer.ui.actions.ExportTable;
 import edu.rice.cs.hpcviewer.ui.actions.HotCallPath;
 import edu.rice.cs.hpcviewer.ui.actions.MetricColumnHideShowAction;
 import edu.rice.cs.hpcviewer.ui.actions.ZoomAction;
+import edu.rice.cs.hpcviewer.ui.addon.DatabaseCollection;
 import edu.rice.cs.hpcviewer.ui.base.IViewBuilder;
 import edu.rice.cs.hpcviewer.ui.actions.UserDerivedMetric;
-import edu.rice.cs.hpcviewer.ui.experiment.DatabaseCollection;
-import edu.rice.cs.hpcviewer.ui.preferences.PreferenceConstants;
-import edu.rice.cs.hpcviewer.ui.resources.FontManager;
 import edu.rice.cs.hpcviewer.ui.resources.IconManager;
 
 

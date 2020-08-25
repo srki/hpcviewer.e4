@@ -76,13 +76,13 @@ public class ToolControl
 		@Override
 		public void beginTask(final String name, final int totalWork) {
 			
-			sync.syncExec(new Runnable() {
+			sync.asyncExec(new Runnable() {
 
 				@Override
 				public void run() {
 					if (progressBar.isDisposed()) return;
 					
-					lblMessage.setText("Runing: " + name);
+					lblMessage.setText(name);
 
 					if( runningTasks <= 0 ) {
 						// --- no task is running at the moment ---
@@ -103,7 +103,7 @@ public class ToolControl
 
 		@Override
 		public void worked(final int work) {
-			sync.syncExec(new Runnable() {
+			sync.asyncExec(new Runnable() {
 
 				@Override
 				public void run() {

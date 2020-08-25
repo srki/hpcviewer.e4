@@ -1,4 +1,4 @@
-package edu.rice.cs.hpcviewer.ui.experiment;
+package edu.rice.cs.hpcviewer.ui.addon;
 
 import java.io.File;
 import java.net.URI;
@@ -32,11 +32,15 @@ import org.eclipse.e4.ui.model.application.ui.basic.MPart;
 import org.eclipse.e4.ui.model.application.ui.basic.MPartStack;
 import org.eclipse.e4.ui.model.application.ui.basic.MStackElement;
 import org.eclipse.e4.ui.model.application.ui.basic.MWindow;
+import org.eclipse.e4.ui.model.application.ui.basic.impl.BasicPackageImpl;
 import org.eclipse.e4.ui.services.IServiceConstants;
 import org.eclipse.e4.ui.workbench.UIEvents;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.e4.ui.workbench.modeling.EPartService;
 import org.eclipse.e4.ui.workbench.modeling.EPartService.PartState;
+import org.eclipse.emf.common.notify.Notification;
+import org.eclipse.emf.common.notify.impl.AdapterImpl;
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
@@ -50,8 +54,8 @@ import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpcbase.ui.IMainPart;
 import edu.rice.cs.hpctraceviewer.ui.TracePart;
 import edu.rice.cs.hpcviewer.ui.ProfilePart;
+import edu.rice.cs.hpcviewer.ui.experiment.ExperimentManager;
 import edu.rice.cs.hpcviewer.ui.internal.ViewerDataEvent;
-import edu.rice.cs.hpcviewer.ui.util.ElementIdManager;
 
 /***
  * <b>
@@ -227,13 +231,40 @@ public class DatabaseCollection
 		
 		if (activeWindowContext == null) {
 			// we give up. There's still no active window yet.
+			MWindow window = application.getSelectedElement();
 			
-			Display display = Display.getCurrent();
-			MessageDialog.openError(display.getActiveShell(), "Error", 
-					"Cannot find an active window with this platform.\n" +
-					"Please open a database from the File-Open menu.");
+			((EObject) window).eAdapters().add(new AdapterImpl() {
+				
+				@SuppressWarnings("restriction")
+				@Override
+				public void notifyChanged(Notification notification) {
+					if (notification.getFeatureID(MWindow.class) != BasicPackageImpl.WINDOW__CONTEXT) {
+						return;
+					}
+					IEclipseContext windowContext = (IEclipseContext) notification.getNewValue();
+					if (windowContext != null) {
+						showPart(experiment, application, service, parentId);
+					}
+				}
+			});
 			return;
 		}
+		showPart(experiment, application, service, parentId);
+	}
+	
+
+	/***
+	 * Display a profile part 
+	 * 
+	 * @param experiment
+	 * @param application
+	 * @param service
+	 * @param parentId
+	 */
+	private void showPart( BaseExperiment experiment, 
+						   MApplication application, 
+						   EPartService   service,
+						   String parentId) {
 
 		//----------------------------------------------------------------
 		// find an empty slot in the part stack
@@ -291,8 +322,8 @@ public class DatabaseCollection
 		}
 		
 		// has to set the element Id before populating the view
-		String elementID = ElementIdManager.getElementId(experiment);
-		part.setElementId(elementID);
+		//String elementID = ElementIdManager.getElementId(experiment);
+		//part.setElementId(elementID);
 		view.setInput(part, experiment);
 
 		//----------------------------------------------------------------
@@ -319,8 +350,8 @@ public class DatabaseCollection
 				}
 			}
 		}
+
 	}
-	
 	
 	/***
 	 * Retrieve the iterator of the database collection
@@ -612,32 +643,14 @@ public class DatabaseCollection
 	 * @param message
 	 */
 	private void openDatabaseAndCreateViews(final Shell shell, final String database, final String message) {
-		Job jobOpenDb = new Job(message) {
-			
-			@Override
-			protected IStatus run(IProgressMonitor monitor) {
-				
-				monitor.beginTask(message + " ...", 2);
-				monitor.worked(1);
 
-				try {
-					final BaseExperiment experiment = openDatabase(shell, database);
-					
-					sync.asyncExec(()-> {
-						createViewsAndAddDatabase(experiment, application, partService, modelService, null);
-					});
-				} catch (Exception e) {
-					final String msg = "Error opening the database";
-					statusReport(IStatus.ERROR, msg, e);
-					
-					return Status.CANCEL_STATUS;
-				}
-				monitor.worked(1);
-				monitor.done();
-				return Status.OK_STATUS;
-			}
-		};
-		jobOpenDb.schedule();
+		try {
+			final BaseExperiment experiment = openDatabase(shell, database);
+			createViewsAndAddDatabase(experiment, application, partService, modelService, null);
+		} catch (Exception e) {
+			final String msg = "Error opening the database";
+			statusReport(IStatus.ERROR, msg, e);
+		}
 	}
 
 }
