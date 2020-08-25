@@ -1,13 +1,12 @@
-package edu.rice.cs.hpcviewer.ui.internal;
-
-import java.util.HashMap;
-import java.util.Map;
+package edu.rice.cs.hpcviewer.ui.nattable;
 
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.nebula.widgets.nattable.NatTable;
 import org.eclipse.nebula.widgets.nattable.config.ConfigRegistry;
 import org.eclipse.nebula.widgets.nattable.config.DefaultNatTableStyleConfiguration;
+import org.eclipse.nebula.widgets.nattable.data.IColumnPropertyAccessor;
 import org.eclipse.nebula.widgets.nattable.data.IDataProvider;
+import org.eclipse.nebula.widgets.nattable.data.ReflectiveColumnPropertyAccessor;
 import org.eclipse.nebula.widgets.nattable.grid.data.DefaultColumnHeaderDataProvider;
 import org.eclipse.nebula.widgets.nattable.grid.data.DefaultCornerDataProvider;
 import org.eclipse.nebula.widgets.nattable.grid.data.DefaultRowHeaderDataProvider;
@@ -24,11 +23,14 @@ import org.eclipse.nebula.widgets.nattable.tree.config.TreeLayerExpandCollapseKe
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import edu.rice.cs.hpc.data.experiment.Experiment;
+import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
+import edu.rice.cs.hpc.data.experiment.scope.Scope;
 
 
 public class ScopeNatTree 
 {
+	private final static String COLUMN_SCOPE_LABEL = "Scope";
 	private Composite container;
 	private RootScope root;
 	private NatTable natTable; 
@@ -54,18 +56,14 @@ public class ScopeNatTree
         
         String []propertyNames = new String[experiment.getMetricCount()+1];
         
-        Map<String, String> mapToLabel = new HashMap<String, String>();
-        
-        propertyNames[0] = ScopeTreeColumnAccessor.COLUMN_SCOPE;
-        mapToLabel.put(ScopeTreeColumnAccessor.COLUMN_SCOPE, ScopeTreeColumnAccessor.COLUMN_SCOPE);
+        propertyNames[0] = COLUMN_SCOPE_LABEL;
 
         for (int i=1; i<propertyNames.length; i++) {
         	String name = experiment.getMetric(i-1).getDisplayName();
         	propertyNames[i] = name;
-        	mapToLabel.put(name, name);
         }
-        
-        final ScopeTreeLayerStack layerStack = new ScopeTreeLayerStack(root);
+        IColumnPropertyAccessor<Scope> accessor = new ColumnPropertyAccessor((Experiment) root.getExperiment());
+        final ScopeTreeLayerStack layerStack = new ScopeTreeLayerStack(root, accessor);
         
         // build the column header layer
         IDataProvider columnDataProvider = new DefaultColumnHeaderDataProvider(propertyNames);

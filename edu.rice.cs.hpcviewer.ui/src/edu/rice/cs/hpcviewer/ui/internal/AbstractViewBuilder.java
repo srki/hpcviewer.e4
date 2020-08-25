@@ -53,6 +53,7 @@ import edu.rice.cs.hpcviewer.ui.actions.MetricColumnHideShowAction;
 import edu.rice.cs.hpcviewer.ui.actions.ZoomAction;
 import edu.rice.cs.hpcviewer.ui.addon.DatabaseCollection;
 import edu.rice.cs.hpcviewer.ui.base.IViewBuilder;
+import edu.rice.cs.hpcviewer.ui.nattable.ScopeNatTree;
 import edu.rice.cs.hpcviewer.ui.actions.UserDerivedMetric;
 import edu.rice.cs.hpcviewer.ui.resources.IconManager;
 

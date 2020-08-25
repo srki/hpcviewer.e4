@@ -1,5 +1,6 @@
-package edu.rice.cs.hpcviewer.ui.internal;
+package edu.rice.cs.hpcviewer.ui.nattable;
 
+import org.eclipse.nebula.widgets.nattable.data.IColumnPropertyAccessor;
 import org.eclipse.nebula.widgets.nattable.data.IDataProvider;
 import org.eclipse.nebula.widgets.nattable.data.IRowDataProvider;
 import org.eclipse.nebula.widgets.nattable.data.ListDataProvider;
@@ -18,29 +19,26 @@ import ca.odell.glazedlists.BasicEventList;
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.TreeList;
 import edu.rice.cs.hpc.data.experiment.Experiment;
+import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 
 public class ScopeTreeLayerStack extends AbstractLayerTransform 
 {
-
-    private final TreeLayer treeLayer;
+	private final TreeLayer treeLayer;
     private final IRowDataProvider<Scope> bodyDataProvider;
     private final SelectionLayer selectionLayer;
 
-	public ScopeTreeLayerStack(RootScope root) {
+	public ScopeTreeLayerStack(RootScope root, IColumnPropertyAccessor<Scope> accessor) {
 		EventList<Scope> eventList = new BasicEventList<Scope>();
 		eventList.add(root);
 		
-		ScopeTreeColumnAccessor accessor = new ScopeTreeColumnAccessor((Experiment) root.getExperiment());
 		bodyDataProvider = new ListDataProvider<Scope>(eventList, accessor);
 		DataLayer dataLayer = new DataLayer(bodyDataProvider);
 		
 		ScopeTreeFormat treeFormat = new ScopeTreeFormat();
 		
-        ITreeRowModel<Scope> treeRowModel = new TreeRowModel<Scope>(root);
-
-		treeLayer = new TreeLayer(selectionLayer, treeRowModel);
+		TreeList<Scope> treeList = new TreeList<Scope>(eventList, treeFormat, TreeList.NODES_START_COLLAPSED);
 		
 		GlazedListsEventLayer<Scope> glazedListEventLayer = new GlazedListsEventLayer<Scope>(dataLayer, eventList);
 		selectionLayer = new SelectionLayer(glazedListEventLayer);
@@ -48,7 +46,7 @@ public class ScopeTreeLayerStack extends AbstractLayerTransform
 		GlazedListTreeData<Scope> treeData = new GlazedListTreeData<Scope>(treeList);
 		ITreeRowModel<Scope> treeRowModel = new GlazedListTreeRowModel<Scope>(treeData);
 		
-		TreeLayer treeLayer = new TreeLayer(selectionLayer, treeRowModel);
+		treeLayer = new TreeLayer(selectionLayer, treeRowModel);
 		ViewportLayer viewPortLayer = new ViewportLayer(treeLayer);
 		
 		setUnderlyingLayer(viewPortLayer);
@@ -60,7 +58,7 @@ public class ScopeTreeLayerStack extends AbstractLayerTransform
 		
 
     public TreeLayer getTreeLayer() {
-        return this.treeLayer;
+        return treeLayer;
     }
 
 	public IDataProvider getBodyDataProvider() {

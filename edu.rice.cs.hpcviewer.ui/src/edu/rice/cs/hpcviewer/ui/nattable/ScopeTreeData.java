@@ -1,4 +1,4 @@
-package edu.rice.cs.hpcviewer.ui.internal;
+package edu.rice.cs.hpcviewer.ui.nattable;
 
 import java.util.List;
 
