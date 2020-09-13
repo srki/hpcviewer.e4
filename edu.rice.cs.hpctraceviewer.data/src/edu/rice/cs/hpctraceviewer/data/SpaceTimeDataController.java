@@ -176,6 +176,17 @@ public abstract class SpaceTimeDataController
 
 	}
 
+	
+	public boolean isHomeView() {
+		
+		if (attributes.getProcessBegin() == 0 && attributes.getProcessEnd() == getTotalTraceCount() &&
+				attributes.getTimeBegin() == (long) 0 && attributes.getTimeEnd() == getTimeWidth()) {
+			return true;
+		}
+		return false;
+		
+	}
+	
 	public int getMaxDepth() 
 	{
 		return maxDepth;
@@ -220,7 +231,6 @@ public abstract class SpaceTimeDataController
 		// TODO
 		return  timelineService.getProcessTimeline(scaledDTProcess);
 	}
-	
 
 	
 	public IBaseData getBaseData(){
@@ -231,8 +241,9 @@ public abstract class SpaceTimeDataController
 	 * Returns number of processes (ProcessTimelines) held in this
 	 * SpaceTimeData.
 	 ******************************************************************************/
-	public int getTotalTraceCount() {
+	public int getTotalTraceCount() {		
 		return dataTrace.getNumberOfRanks();
+		
 	}
 	
 	public HashMap<Integer, CallPath> getScopeMap() {
